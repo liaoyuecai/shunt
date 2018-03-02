@@ -11,6 +11,7 @@ import io.netty.handler.logging.LoggingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 abstract class Server {
@@ -19,18 +20,17 @@ abstract class Server {
     final EventLoopGroup worker = new NioEventLoopGroup();
     final ServerBootstrap bootstrap = new ServerBootstrap();
 
-    abstract void init();
+    abstract Server init();
 
-    void start(ChannelInitializer channelInitializer,final int port) {
+    void start(ChannelInitializer channelInitializer, final int port) {
         bootstrap.group(boss, worker).
                 channel(NioServerSocketChannel.class).option(ChannelOption.TCP_NODELAY, true)
                 .handler(new LoggingHandler(LogLevel.INFO))
                 .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(channelInitializer);
-        Executors.newSingleThreadExecutor().execute(new Thread() {
-            @Override
-            public void run() {
+        Executors.newSingleThreadExecutor().submit(new Callable<Object>() {
+            public Object call() throws Exception {
                 try {
                     ChannelFuture ch = bootstrap.bind(port).sync();
                     ch.channel().closeFuture().sync();
@@ -41,6 +41,7 @@ abstract class Server {
                     worker.shutdownGracefully();
                     logger.warn("Server has been over");
                 }
+                return null;
             }
         });
     }

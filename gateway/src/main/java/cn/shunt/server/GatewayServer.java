@@ -5,7 +5,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 class GatewayServer extends Server {
-    void init() {
+    Server init() {
         ChannelInitializer channelInitializer = new ChannelInitializer<SocketChannel>() {
             public void initChannel(SocketChannel channel)
                     throws Exception {
@@ -17,5 +17,6 @@ class GatewayServer extends Server {
             }
         };
         start(channelInitializer, ParamsLoader.gatewayPort);
+        return this;
     }
 }

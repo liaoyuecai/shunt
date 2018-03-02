@@ -1,10 +1,9 @@
-package cn.shunt.server;
+package cn.shunt.client;
 
 
 import java.nio.charset.Charset;
 
 class ApplicationMsg {
-    final static int REGISTER = 0;
     final static int REGISTER_ACK = 1;
     final static int REGISTER_FINISH = 2;
     final static int CONNECTION = 3;
