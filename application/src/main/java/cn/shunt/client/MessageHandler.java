@@ -1,7 +1,9 @@
 package cn.shunt.client;
 
-interface MessageHandler {
-    void connect(MessageChannel channel);
-    void disconnect(MessageChannel channel);
-    void receive(MessageChannel channel,Object o);
+public abstract class MessageHandler {
+    abstract void connect(MessageChannel channel);
+
+    abstract void disconnect(MessageChannel channel);
+
+    abstract void receive(MessageChannel channel, Object o);
 }

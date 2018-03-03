@@ -1,4 +1,4 @@
 package cn.shunt.client;
 
-public interface MessageEncoder {
+public abstract class MessageEncoder {
 }
