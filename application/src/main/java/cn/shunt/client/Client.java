@@ -21,6 +21,8 @@ abstract class Client {
 
     ChannelFuture channelFuture;
 
+    Channel channel;
+
     final Bootstrap client = new Bootstrap();
 
     Client(String host, int port) {
@@ -50,6 +52,7 @@ abstract class Client {
     void connect() throws InterruptedException {
         try {
             channelFuture.channel().closeFuture().sync();
+            channel = channelFuture.channel();
         } catch (Exception e) {
             logger.error("Client exception,client will reconnect in 5 seconds", e);
             TimeUnit.MILLISECONDS.sleep(5000);

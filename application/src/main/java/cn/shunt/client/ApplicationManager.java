@@ -1,6 +1,10 @@
 package cn.shunt.client;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,13 +12,17 @@ import java.util.concurrent.*;
 import java.util.concurrent.locks.StampedLock;
 
 final class ApplicationManager {
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationManager.class);
+    static final LinkedBlockingQueue<ApplicationMsg> msgQueue = new LinkedBlockingQueue<ApplicationMsg>();
     private static final StampedLock lock = new StampedLock();
     private final static ExecutorService executor = Executors.newCachedThreadPool();
-    ;
-    static final LinkedBlockingQueue<ApplicationMsg> msgQueue = new LinkedBlockingQueue<ApplicationMsg>();
     private static final Map<String, MessageChannel> channelMap = new ConcurrentHashMap();
+    /*
+     * 目前考虑模型为一台网关服务器+多个应用服务器，每个应用服务器为单独应用
+     */
+    private static Client client;
     private static List<MessageWorker> workers = new ArrayList<>();
-    static ChannelFactory factory;
+    private static ChannelFactory factory;
     final static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
     private static int handleSum = 0;
@@ -23,6 +31,21 @@ final class ApplicationManager {
 
     static synchronized void handleOver() {
         handleSum++;
+    }
+
+    /*
+     * 此处只允许单链接
+     */
+    static synchronized void initClient(String gatewayHost, int gatewayPort, ChannelFactory factory) throws InterruptedException {
+        if (client == null) {
+            if (factory == null)
+                throw new NullPointerException("factory is null");
+            ApplicationManager.factory = factory;
+            client = new ApplicationClient(gatewayHost, gatewayPort);
+            client.init();
+        } else {
+            logger.error("Server has been created, please do't repeat to create");
+        }
     }
 
 
@@ -61,12 +84,14 @@ final class ApplicationManager {
                     MessageWorker worker = new MessageWorker();
                     executor.execute(worker);
                     workers.add(worker);
+                    efficient = 0;
                 } else if (efficient > 5) {
                     if (workers.size() > 1) {
                         MessageWorker worker = workers.get(0);
                         workers.remove(worker);
                         worker.destroy();
                     }
+                    efficient = 0;
                 }
             }
         };
@@ -102,5 +127,9 @@ final class ApplicationManager {
 
     static void receive(ApplicationMsg msg) throws InterruptedException {
         msgQueue.put(msg);
+    }
+
+    static void sendMsg(ApplicationMsg msg){
+        client.channel.writeAndFlush(msg);
     }
 }

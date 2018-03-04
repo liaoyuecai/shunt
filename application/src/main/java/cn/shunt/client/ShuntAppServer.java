@@ -8,14 +8,13 @@ public final class ShuntAppServer {
     private final String gatewayHost;
     private final int gatewayPort;
 
-    public ShuntAppServer(String gatewayHost, int gatewayPort) {
+    public ShuntAppServer(String gatewayHost, int gatewayPort, ChannelFactory factory) {
         this.gatewayHost = gatewayHost;
         this.gatewayPort = gatewayPort;
 
     }
 
     public void Initiate(ChannelFactory factory) throws InterruptedException {
-        ApplicationManager.factory = factory;
-        new ApplicationClient(gatewayHost, gatewayPort).init();
+        ApplicationManager.initClient(gatewayHost, gatewayPort, factory);
     }
 }

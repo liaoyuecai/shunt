@@ -23,7 +23,8 @@ class ApplicationMsg {
         this.msgId = msgId;
         this.number = number;
     }
-    ApplicationMsg(int msgId){
+
+    ApplicationMsg(int msgId) {
         this.msgId = msgId;
     }
 }

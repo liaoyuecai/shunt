@@ -5,7 +5,7 @@ import io.netty.buffer.PooledByteBufAllocator;
 
 public abstract class MessageDecoder {
 
-    void decode(MessageChannel channel, ApplicationMsg msg) {
+    final void decode(MessageChannel channel, ApplicationMsg msg) {
         ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer();
         buf.writeBytes(msg.data);
         channel.handler.receive(channel, decode(channel, buf));
